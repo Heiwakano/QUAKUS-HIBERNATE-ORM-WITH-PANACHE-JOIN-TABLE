@@ -3,12 +3,12 @@ package org.acme.test;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
 @Entity
@@ -27,6 +27,7 @@ public class Person extends PanacheEntityBase {
     public LocalDate birth;
     public Status status;
     @OneToMany(fetch = FetchType.LAZY, cascade=CascadeType.ALL,mappedBy = "person")
+//    @Fetch(FetchMode.JOIN)
     public Set<Product> products;
 
     @JsonbTransient
@@ -46,6 +47,10 @@ public class Person extends PanacheEntityBase {
         this.name = name;
         this.birth = birth;
         this.status = status;
+    }
+
+    public static Set<PanacheEntityBase> findAllPerson() {
+        return Person.list("select distinct p from Person p join fetch p.products").stream().collect(Collectors.toSet());
     }
 
     public static Person findByName(String name){
